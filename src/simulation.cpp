@@ -51,10 +51,7 @@ BrownianSimulation::BrownianSimulation(int width, int height, int particle_count
 }
 
 void BrownianSimulation::update(float delta_time) {
-    // INTENTIONALLY SLOW: Perform matrix multiplication every frame!
-    // This will be very visible in the profiler
-    MatrixOperations::fastMatrixMultiply(transformation_matrix, position_matrix, result_matrix);
-    //MatrixOperations::slowMatrixMultiply(transformation_matrix, position_matrix, result_matrix);
+    MatrixOperations::multiplyMatrices(transformation_matrix, position_matrix, result_matrix);
     
     // Update each particle
     for (auto& particle : particles) {

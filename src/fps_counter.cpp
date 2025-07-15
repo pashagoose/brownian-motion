@@ -47,6 +47,15 @@ void FPSCounter::update() {
         oss << " | Particles: 10000";
         oss << "\nMatrix ops per frame: 280x280";
         
+        // Show which optimization is active
+#ifdef USE_SLOW_MATRIX
+        oss << " | SLOW";
+#elif defined(USE_FAST_MATRIX)
+        oss << " | FAST";
+#else
+        oss << " | DEFAULT";
+#endif
+        
         fps_text->setString(oss.str());
     }
 }

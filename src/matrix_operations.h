@@ -4,23 +4,9 @@
 
 class MatrixOperations {
 public:
-    // Intentionally slow matrix multiplication for demonstration
-    // This will show up prominently in the profiler
-    static void slowMatrixMultiply(
-        const std::vector<std::vector<float>>& a,
-        const std::vector<std::vector<float>>& b,
-        std::vector<std::vector<float>>& result
-    );
-    
-    // Optimized version (cache-friendly with transposition)
-    static void fastMatrixMultiply(
-        const std::vector<std::vector<float>>& a,
-        const std::vector<std::vector<float>>& b,
-        std::vector<std::vector<float>>& result
-    );
-    
-    // Ultra-fast version with SIMD optimizations for ARM/x86
-    static void ultraFastMatrixMultiply(
+    // Single matrix multiplication function - implementation varies based on build target
+    // This ensures consistent naming in profiler flame graphs across all optimization levels
+    static void multiplyMatrices(
         const std::vector<std::vector<float>>& a,
         const std::vector<std::vector<float>>& b,
         std::vector<std::vector<float>>& result

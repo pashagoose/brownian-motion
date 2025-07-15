@@ -14,6 +14,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(WINDOW_WIDTH, WINDOW_HEIGHT)), 
                            "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
     window.setFramerateLimit(0); // No limit - we want to see the real performance
+    window.setVerticalSyncEnabled(false); // Disable V-Sync for maximum performance
     
     if (!window.isOpen()) {
         std::cout << "Error: Could not create window!" << std::endl;
@@ -43,9 +44,10 @@ int main() {
         float delta_time = std::chrono::duration<float>(current_time - last_time).count();
         last_time = current_time;
         
-        // Limit delta time to prevent huge jumps
-        if (delta_time > 0.1f) {
-            delta_time = 0.016f; // ~60fps
+        // Only limit delta time for extremely large jumps (e.g., when debugging/pausing)
+        // but allow much higher FPS for performance testing
+        if (delta_time > 0.5f) {
+            delta_time = 0.016f; // Only cap at 2 FPS to prevent huge simulation jumps
         }
         
         // Handle events
