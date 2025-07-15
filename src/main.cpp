@@ -1,0 +1,85 @@
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <chrono>
+
+#include "simulation.h"
+#include "fps_counter.h"
+
+constexpr int WINDOW_WIDTH = 1200;
+constexpr int WINDOW_HEIGHT = 800;
+constexpr int PARTICLE_COUNT = 10000; // Extreme particle count for maximum performance impact
+
+int main() {
+    // Create window
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(WINDOW_WIDTH, WINDOW_HEIGHT)), 
+                           "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
+    window.setFramerateLimit(0); // No limit - we want to see the real performance
+    
+    if (!window.isOpen()) {
+        std::cout << "Error: Could not create window!" << std::endl;
+        return -1;
+    }
+    
+    // Initialize components
+    BrownianSimulation simulation(WINDOW_WIDTH, WINDOW_HEIGHT, PARTICLE_COUNT);
+    FPSCounter fps_counter;
+    
+    if (!fps_counter.initialize()) {
+        std::cout << "Warning: Could not load font for FPS counter\n";
+    }
+    
+    // Timing variables
+    auto last_time = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "Brownian Motion Simulation Started\n";
+    std::cout << "Particles: " << simulation.getParticleCount() << "\n";
+    std::cout << "Window: " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
+    std::cout << "Press ESC to exit\n";
+    
+    // Main game loop
+    while (window.isOpen()) {
+        // Calculate delta time
+        auto current_time = std::chrono::high_resolution_clock::now();
+        float delta_time = std::chrono::duration<float>(current_time - last_time).count();
+        last_time = current_time;
+        
+        // Limit delta time to prevent huge jumps
+        if (delta_time > 0.1f) {
+            delta_time = 0.016f; // ~60fps
+        }
+        
+        // Handle events
+        while (auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                std::cout << "Window closed by user\n";
+                window.close();
+            }
+            
+            if (event->is<sf::Event::KeyPressed>()) {
+                auto key_event = event->getIf<sf::Event::KeyPressed>();
+                if (key_event->code == sf::Keyboard::Key::Escape) {
+                    std::cout << "Escape pressed - exiting\n";
+                    window.close();
+                } else if (key_event->code == sf::Keyboard::Key::Space) {
+                    simulation.resetParticles();
+                    std::cout << "Simulation reset\n";
+                }
+            }
+        }
+        
+        // Update simulation
+        simulation.update(delta_time);
+        fps_counter.update();
+        
+        // Render everything
+        window.clear(sf::Color::White);
+        
+        simulation.render(window);
+        fps_counter.render(window);
+        
+        window.display();
+    }
+    
+    std::cout << "Simulation ended\n";
+    return 0;
+} 
