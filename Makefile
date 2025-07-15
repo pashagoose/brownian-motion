@@ -90,3 +90,7 @@ help:
 	@echo "  run          - Build and run the program"
 	@echo "  help         - Show this help"
 	@echo ""
+	@echo "🖥️  Usage:"
+	@echo "  ./brownian_simulation              - Run with graphics"
+	@echo "  ./brownian_simulation -no-visualize - Run headless mode (Ctrl+C to stop)"
+	@echo ""

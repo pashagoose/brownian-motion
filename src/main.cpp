@@ -1,6 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <chrono>
+#include <string>
+#include <iomanip>
+#include <signal.h>
 
 #include "simulation.h"
 #include "fps_counter.h"
@@ -9,7 +12,90 @@ constexpr int WINDOW_WIDTH = 1200;
 constexpr int WINDOW_HEIGHT = 800;
 constexpr int PARTICLE_COUNT = 10000; // Extreme particle count for maximum performance impact
 
-int main() {
+// Global variables for signal handling
+static volatile bool running = true;
+static int total_frames = 0;
+static std::chrono::high_resolution_clock::time_point start_time;
+
+void signalHandler(int signal) {
+    if (signal == SIGINT) {
+        std::cout << "\n\n=== INTERRUPTED BY USER ===" << std::endl;
+        auto end_time = std::chrono::high_resolution_clock::now();
+        float total_duration = std::chrono::duration<float>(end_time - start_time).count();
+        float avg_fps = total_frames / total_duration;
+        
+        std::cout << "Average FPS: " << std::fixed << std::setprecision(1) << avg_fps << std::endl;
+        std::cout << "Total frames: " << total_frames << std::endl;
+        std::cout << "Duration: " << std::fixed << std::setprecision(1) << total_duration << " seconds" << std::endl;
+        
+        running = false;
+    }
+}
+
+void runHeadlessMode() {
+    std::cout << "=== HEADLESS MODE ===" << std::endl;
+    std::cout << "Particles: " << PARTICLE_COUNT << std::endl;
+    std::cout << "Matrix operations: 280x280 per frame" << std::endl;
+    std::cout << "Running indefinitely... Press Ctrl+C to stop and see results" << std::endl;
+    
+    // Setup signal handler
+    signal(SIGINT, signalHandler);
+    
+    // Initialize simulation (no window needed)
+    BrownianSimulation simulation(WINDOW_WIDTH, WINDOW_HEIGHT, PARTICLE_COUNT);
+    
+    start_time = std::chrono::high_resolution_clock::now();
+    auto last_time = start_time;
+    auto last_fps_time = start_time;
+    
+    int frame_count = 0;
+    total_frames = 0;
+    
+    // Run until interrupted
+    while (running) {
+        auto current_time = std::chrono::high_resolution_clock::now();
+        float delta_time = std::chrono::duration<float>(current_time - last_time).count();
+        last_time = current_time;
+        
+        // Limit delta time for consistent simulation
+        if (delta_time > 0.1f) {
+            delta_time = 0.016f;
+        }
+        
+        // Update simulation (this is where the matrix operations happen)
+        simulation.update(delta_time);
+        
+        frame_count++;
+        total_frames++;
+        
+        // Print FPS every second
+        auto fps_duration = std::chrono::duration<float>(current_time - last_fps_time).count();
+        if (fps_duration >= 1.0f) {
+            float fps = frame_count / fps_duration;
+            std::cout << "FPS: " << std::fixed << std::setprecision(1) << fps 
+                     << " | Total frames: " << total_frames << std::endl;
+            frame_count = 0;
+            last_fps_time = current_time;
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Parse command line arguments
+    bool headless = false;
+    for (int i = 1; i < argc; i++) {
+        if (std::string(argv[i]) == "-no-visualize" || std::string(argv[i]) == "--no-visualize") {
+            headless = true;
+            break;
+        }
+    }
+    
+    if (headless) {
+        runHeadlessMode();
+        return 0;
+    }
+    
+    // Original graphical mode
     // Debug: Print SFML version
     std::cout << "SFML Version: " << SFML_VERSION_MAJOR << "." << SFML_VERSION_MINOR << "." << SFML_VERSION_PATCH << std::endl;
     
