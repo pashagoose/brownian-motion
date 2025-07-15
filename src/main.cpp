@@ -68,7 +68,7 @@ void runHeadlessMode() {
         frame_count++;
         total_frames++;
         
-        // Print FPS every second
+        // Print FPS every second (simple frames per second calculation)
         auto fps_duration = std::chrono::duration<float>(current_time - last_fps_time).count();
         if (fps_duration >= 1.0f) {
             float fps = frame_count / fps_duration;
@@ -99,9 +99,17 @@ int main(int argc, char* argv[]) {
     // Debug: Print SFML version
     std::cout << "SFML Version: " << SFML_VERSION_MAJOR << "." << SFML_VERSION_MINOR << "." << SFML_VERSION_PATCH << std::endl;
     
-    // Create window - SFML 2.x compatible syntax
+    // Create window with version-specific API
+#if SFML_VERSION_MAJOR >= 3
+    // SFML 3.x API
+    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(WINDOW_WIDTH, WINDOW_HEIGHT)), 
+                           "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
+#else
+    // SFML 2.x API  
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), 
                            "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
+#endif
+    
     window.setFramerateLimit(0); // No limit - we want to see the real performance
     window.setVerticalSyncEnabled(false); // Disable V-Sync for maximum performance
     
@@ -139,7 +147,28 @@ int main(int argc, char* argv[]) {
             delta_time = 0.016f; // Only cap at 2 FPS to prevent huge simulation jumps
         }
         
-        // Handle events - SFML 2.x compatible syntax
+        // Handle events with version-specific API
+#if SFML_VERSION_MAJOR >= 3
+        // SFML 3.x event handling
+        while (auto event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                std::cout << "Window closed by user\n";
+                window.close();
+            }
+            
+            if (event->is<sf::Event::KeyPressed>()) {
+                auto key_event = event->getIf<sf::Event::KeyPressed>();
+                if (key_event->code == sf::Keyboard::Key::Escape) {
+                    std::cout << "Escape pressed - exiting\n";
+                    window.close();
+                } else if (key_event->code == sf::Keyboard::Key::Space) {
+                    simulation.resetParticles();
+                    std::cout << "Simulation reset\n";
+                }
+            }
+        }
+#else
+        // SFML 2.x event handling
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -157,6 +186,7 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
+#endif
         
         // Update simulation
         simulation.update(delta_time);
