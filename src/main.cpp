@@ -10,8 +10,11 @@ constexpr int WINDOW_HEIGHT = 800;
 constexpr int PARTICLE_COUNT = 10000; // Extreme particle count for maximum performance impact
 
 int main() {
-    // Create window
-    sf::RenderWindow window(sf::VideoMode(sf::Vector2u(WINDOW_WIDTH, WINDOW_HEIGHT)), 
+    // Debug: Print SFML version
+    std::cout << "SFML Version: " << SFML_VERSION_MAJOR << "." << SFML_VERSION_MINOR << "." << SFML_VERSION_PATCH << std::endl;
+    
+    // Create window - SFML 2.x compatible syntax
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), 
                            "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
     window.setFramerateLimit(0); // No limit - we want to see the real performance
     window.setVerticalSyncEnabled(false); // Disable V-Sync for maximum performance
@@ -50,19 +53,19 @@ int main() {
             delta_time = 0.016f; // Only cap at 2 FPS to prevent huge simulation jumps
         }
         
-        // Handle events
-        while (auto event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) {
+        // Handle events - SFML 2.x compatible syntax
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
                 std::cout << "Window closed by user\n";
                 window.close();
             }
             
-            if (event->is<sf::Event::KeyPressed>()) {
-                auto key_event = event->getIf<sf::Event::KeyPressed>();
-                if (key_event->code == sf::Keyboard::Key::Escape) {
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Escape) {
                     std::cout << "Escape pressed - exiting\n";
                     window.close();
-                } else if (key_event->code == sf::Keyboard::Key::Space) {
+                } else if (event.key.code == sf::Keyboard::Space) {
                     simulation.resetParticles();
                     std::cout << "Simulation reset\n";
                 }
