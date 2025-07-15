@@ -9,13 +9,13 @@ FPSCounter::FPSCounter() : font_loaded(false) {
 
 bool FPSCounter::initialize() {
     // Try to load system font (this might fail on some systems)
-    if (font.openFromFile("/System/Library/Fonts/Helvetica.ttc") ||  // macOS
-        font.openFromFile("/Library/Fonts/Arial.ttf") ||  // macOS alternative
-        font.openFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf") ||  // Linux
-        font.openFromFile("C:\\Windows\\Fonts\\arial.ttf")) {  // Windows
+    if (font.loadFromFile("/System/Library/Fonts/Helvetica.ttc") ||  // macOS
+        font.loadFromFile("/Library/Fonts/Arial.ttf") ||  // macOS alternative
+        font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf") ||  // Linux
+        font.loadFromFile("C:\\Windows\\Fonts\\arial.ttf")) {  // Windows
         
         font_loaded = true;
-        fps_text = std::make_unique<sf::Text>(font, "FPS: --", 24);
+        fps_text = std::make_unique<sf::Text>("FPS: --", font, 24);
         fps_text->setFillColor(sf::Color::Black); // Black text on white background
         fps_text->setStyle(sf::Text::Bold);
         fps_text->setPosition(sf::Vector2f(10, 10));
