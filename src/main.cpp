@@ -4,6 +4,7 @@
 #include <string>
 #include <iomanip>
 #include <signal.h>
+#include <thread>
 
 #include "simulation.h"
 #include "fps_counter.h"
@@ -36,6 +37,7 @@ void runHeadlessMode() {
     std::cout << "=== HEADLESS MODE ===" << std::endl;
     std::cout << "Particles: " << PARTICLE_COUNT << std::endl;
     std::cout << "Matrix operations: 280x280 per frame" << std::endl;
+    std::cout << "FPS limited to 30 (to observe CPU usage difference)" << std::endl;
     std::cout << "Running indefinitely... Press Ctrl+C to stop and see results" << std::endl;
     
     // Setup signal handler
@@ -50,6 +52,10 @@ void runHeadlessMode() {
     
     int frame_count = 0;
     total_frames = 0;
+    
+    // Target 30 FPS
+    const float target_fps = 30.0f;
+    const float target_frame_time = 1.0f / target_fps;
     
     // Run until interrupted
     while (running) {
@@ -76,6 +82,15 @@ void runHeadlessMode() {
                      << " | Total frames: " << total_frames << std::endl;
             frame_count = 0;
             last_fps_time = current_time;
+        }
+        
+        // Limit to 30 FPS - sleep if we're running too fast
+        auto frame_end_time = std::chrono::high_resolution_clock::now();
+        float frame_duration = std::chrono::duration<float>(frame_end_time - current_time).count();
+        
+        if (frame_duration < target_frame_time) {
+            float sleep_time = target_frame_time - frame_duration;
+            std::this_thread::sleep_for(std::chrono::duration<float>(sleep_time));
         }
     }
 }
@@ -110,8 +125,8 @@ int main(int argc, char* argv[]) {
                            "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
 #endif
     
-    window.setFramerateLimit(0); // No limit - we want to see the real performance
-    window.setVerticalSyncEnabled(false); // Disable V-Sync for maximum performance
+    window.setFramerateLimit(30); // Lock to 30 FPS to see CPU usage difference
+    window.setVerticalSyncEnabled(false); // Disable V-Sync
     
     if (!window.isOpen()) {
         std::cout << "Error: Could not create window!" << std::endl;
@@ -132,7 +147,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Brownian Motion Simulation Started\n";
     std::cout << "Particles: " << simulation.getParticleCount() << "\n";
     std::cout << "Window: " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
-    std::cout << "Press ESC to exit\n";
+    std::cout << "FPS limited to 30 (to observe CPU usage difference)\n";
+    std::cout << "Press ESC to exit, SPACE to reset\n";
     
     // Main game loop
     while (window.isOpen()) {
