@@ -23,7 +23,8 @@ BrownianSimulation::BrownianSimulation(int width, int height, int particle_count
       noise_dist(-50.0f, 50.0f),
       color_dist(0.0f, 1.0f),
       window_width(width), 
-      window_height(height) {
+      window_height(height),
+      obstacle_system(width, height, 4) { // 4 obstacles by default
     
     // Initialize particles
     particles.reserve(particle_count);
@@ -53,6 +54,9 @@ BrownianSimulation::BrownianSimulation(int width, int height, int particle_count
 void BrownianSimulation::update(float delta_time) {
     MatrixOperations::multiplyMatrices(transformation_matrix, position_matrix, result_matrix);
     
+    // Update obstacle system
+    obstacle_system.update(delta_time);
+    
     // Update each particle
     for (auto& particle : particles) {
         // Add random brownian motion - make it more pronounced
@@ -69,6 +73,9 @@ void BrownianSimulation::update(float delta_time) {
         // Update position with more visible movement (slower)
         particle.position.x += particle.velocity.x * delta_time * 40.0f; // Reduced from 60.0f
         particle.position.y += particle.velocity.y * delta_time * 40.0f;
+        
+        // Handle collision with obstacles (after position update)
+        obstacle_system.handleParticleCollision(particle.position, particle.velocity, particle.radius);
         
         // Bounce off walls (softer bouncing)
         if (particle.position.x <= particle.radius || particle.position.x >= window_width - particle.radius) {
@@ -94,6 +101,9 @@ void BrownianSimulation::update(float delta_time) {
 }
 
 void BrownianSimulation::render(sf::RenderWindow& window) {
+    // Draw obstacles first (so they appear behind particles)
+    obstacle_system.render(window);
+    
     // Draw particles as circles
     sf::CircleShape circle;
     
@@ -117,4 +127,7 @@ void BrownianSimulation::resetParticles() {
         particle.velocity.x = 0;
         particle.velocity.y = 0;
     }
+    
+    // Also reset obstacles
+    obstacle_system.resetObstacles();
 } 

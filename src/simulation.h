@@ -3,6 +3,7 @@
 #include <vector>
 #include <random>
 #include <SFML/Graphics.hpp>
+#include "obstacle_system.h"
 
 struct Particle {
     sf::Vector2f position;
@@ -27,6 +28,9 @@ private:
     std::vector<std::vector<float>> transformation_matrix;
     std::vector<std::vector<float>> position_matrix;
     std::vector<std::vector<float>> result_matrix;
+    
+    // Obstacle system for particle interactions
+    ObstacleSystem obstacle_system;
     
 public:
     BrownianSimulation(int width, int height, int particle_count = 1000);

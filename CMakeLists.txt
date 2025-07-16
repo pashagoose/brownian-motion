@@ -14,6 +14,7 @@ add_executable(brownian_simulation
     src/simulation.cpp
     src/matrix_operations.cpp
     src/fps_counter.cpp
+    src/obstacle_system.cpp
 )
 
 # Link SFML
