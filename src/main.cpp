@@ -37,7 +37,7 @@ void runHeadlessMode() {
     std::cout << "=== HEADLESS MODE ===" << std::endl;
     std::cout << "Particles: " << PARTICLE_COUNT << std::endl;
     std::cout << "Matrix operations: 280x280 per frame" << std::endl;
-    std::cout << "FPS limited to 30 (to observe CPU usage difference)" << std::endl;
+    std::cout << "FPS limited to 60 for consistent performance comparison" << std::endl;
     std::cout << "Running indefinitely... Press Ctrl+C to stop and see results" << std::endl;
     
     // Setup signal handler
@@ -53,8 +53,8 @@ void runHeadlessMode() {
     int frame_count = 0;
     total_frames = 0;
     
-    // Target 30 FPS
-    const float target_fps = 30.0f;
+    // Target 60 FPS
+    const float target_fps = 60.0f;
     const float target_frame_time = 1.0f / target_fps;
     
     // Run until interrupted
@@ -84,7 +84,7 @@ void runHeadlessMode() {
             last_fps_time = current_time;
         }
         
-        // Limit to 30 FPS - sleep if we're running too fast
+        // Limit to 60 FPS - sleep if we're running too fast
         auto frame_end_time = std::chrono::high_resolution_clock::now();
         float frame_duration = std::chrono::duration<float>(frame_end_time - current_time).count();
         
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
                            "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
 #endif
     
-    window.setFramerateLimit(30); // Lock to 30 FPS to see CPU usage difference
+    window.setFramerateLimit(60); // Lock to 60 FPS for consistent performance comparison
     window.setVerticalSyncEnabled(false); // Disable V-Sync
     
     if (!window.isOpen()) {
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Brownian Motion Simulation Started\n";
     std::cout << "Particles: " << simulation.getParticleCount() << "\n";
     std::cout << "Window: " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
-    std::cout << "FPS limited to 30 (to observe CPU usage difference)\n";
+    std::cout << "FPS limited to 60 for consistent performance comparison\n";
     std::cout << "Press ESC to exit, SPACE to reset\n";
     
     // Main game loop
