@@ -10,7 +10,7 @@ void MatrixOperations::multiplyMatrices(
     const std::vector<std::vector<float>>& a,
     const std::vector<std::vector<float>>& b,
     std::vector<std::vector<float>>& result) {
-    
+
     if (a.empty() || b.empty() || a[0].size() != b.size()) {
         return;
     }
@@ -18,28 +18,15 @@ void MatrixOperations::multiplyMatrices(
     int rows_a = a.size();
     int cols_a = a[0].size();
     int cols_b = b[0].size();
-    
+
     result.resize(rows_a, std::vector<float>(cols_b, 0.0f));
-    
-    // INTENTIONALLY SLOW: Bad cache locality
+
     for (int i = 0; i < rows_a; ++i) {
         for (int j = 0; j < cols_b; ++j) {
             result[i][j] = 0.0f;
             for (int k = 0; k < cols_a; ++k) {
                 result[i][j] += a[i][k] * b[k][j];
-                
-                float temp = result[i][j];
-                temp = temp * 1.00001f;
-                result[i][j] = temp;
             }
-        }
-    }
-    
-    for (int i = 0; i < rows_a; ++i) {
-        for (int j = 0; j < cols_b; ++j) {
-            float val = result[i][j];
-            val = sqrt(val * val + 0.0001f);
-            result[i][j] = val;
         }
     }
 }
