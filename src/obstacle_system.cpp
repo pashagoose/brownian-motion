@@ -287,9 +287,25 @@ void ObstacleSystem::render(sf::RenderWindow& window) {
     
     for (const auto& obstacle : obstacles) {
         rectangle.setSize(obstacle.size);
+        
+        // SFML version-specific origin setting
+#if SFML_VERSION_MAJOR >= 3
+        // SFML 3.x API - uses sf::Vector2f
         rectangle.setOrigin(sf::Vector2f(obstacle.size.x / 2, obstacle.size.y / 2));
+#else
+        // SFML 2.x API - uses separate x, y parameters
+        rectangle.setOrigin(obstacle.size.x / 2, obstacle.size.y / 2);
+#endif
         rectangle.setPosition(obstacle.position);
-        rectangle.setRotation(sf::degrees(obstacle.rotation * 180.0f / M_PI)); // Convert to degrees
+        
+        // SFML version-specific rotation setting
+#if SFML_VERSION_MAJOR >= 3
+        // SFML 3.x API - uses sf::degrees
+        rectangle.setRotation(sf::degrees(obstacle.rotation * 180.0f / M_PI));
+#else
+        // SFML 2.x API - uses degrees directly
+        rectangle.setRotation(obstacle.rotation * 180.0f / M_PI);
+#endif
         rectangle.setFillColor(obstacle.color);
         rectangle.setOutlineThickness(2.0f);
         rectangle.setOutlineColor(sf::Color(0, 0, 0, 100));
