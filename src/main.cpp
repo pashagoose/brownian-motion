@@ -37,7 +37,6 @@ void runHeadlessMode() {
     std::cout << "=== HEADLESS MODE ===" << std::endl;
     std::cout << "Particles: " << PARTICLE_COUNT << std::endl;
     std::cout << "Matrix operations: 280x280 per frame" << std::endl;
-    std::cout << "FPS limited to 60 for consistent performance comparison" << std::endl;
     std::cout << "Running indefinitely... Press Ctrl+C to stop and see results" << std::endl;
     
     // Setup signal handler
@@ -52,24 +51,21 @@ void runHeadlessMode() {
     
     int frame_count = 0;
     total_frames = 0;
-    
-    // Target 60 FPS
-    const float target_fps = 60.0f;
-    const float target_frame_time = 1.0f / target_fps;
+    float total_frame_time = 0.0f;
     
     // Run until interrupted
     while (running) {
-        auto current_time = std::chrono::high_resolution_clock::now();
+        auto frame_start = std::chrono::high_resolution_clock::now();
+        auto current_time = frame_start;
         float delta_time = std::chrono::duration<float>(current_time - last_time).count();
         last_time = current_time;
         
-        // Limit delta time for consistent simulation
-        if (delta_time > 0.1f) {
-            delta_time = 0.016f;
-        }
-        
         // Update simulation (this is where the matrix operations happen)
         simulation.update(delta_time);
+        
+        auto frame_end = std::chrono::high_resolution_clock::now();
+        float frame_time = std::chrono::duration<float>(frame_end - frame_start).count();
+        total_frame_time += frame_time;
         
         frame_count++;
         total_frames++;
@@ -78,19 +74,13 @@ void runHeadlessMode() {
         auto fps_duration = std::chrono::duration<float>(current_time - last_fps_time).count();
         if (fps_duration >= 1.0f) {
             float fps = frame_count / fps_duration;
+            float avg_frame_time = total_frame_time / frame_count;
             std::cout << "FPS: " << std::fixed << std::setprecision(1) << fps 
+                     << " | Avg frame time: " << std::setprecision(3) << (avg_frame_time * 1000.0f) << "ms"
                      << " | Total frames: " << total_frames << std::endl;
             frame_count = 0;
+            total_frame_time = 0.0f;
             last_fps_time = current_time;
-        }
-        
-        // Limit to 60 FPS - sleep if we're running too fast
-        auto frame_end_time = std::chrono::high_resolution_clock::now();
-        float frame_duration = std::chrono::duration<float>(frame_end_time - current_time).count();
-        
-        if (frame_duration < target_frame_time) {
-            float sleep_time = target_frame_time - frame_duration;
-            std::this_thread::sleep_for(std::chrono::duration<float>(sleep_time));
         }
     }
 }
@@ -125,7 +115,7 @@ int main(int argc, char* argv[]) {
                            "Brownian Motion Simulation - C++ Zero Cost Conf Demo");
 #endif
     
-    window.setFramerateLimit(60); // Lock to 60 FPS for consistent performance comparison
+    window.setFramerateLimit(120); // Lock to 120 FPS for consistent performance comparison
     window.setVerticalSyncEnabled(false); // Disable V-Sync
     
     if (!window.isOpen()) {
@@ -147,7 +137,6 @@ int main(int argc, char* argv[]) {
     std::cout << "Brownian Motion Simulation Started\n";
     std::cout << "Particles: " << simulation.getParticleCount() << "\n";
     std::cout << "Window: " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
-    std::cout << "FPS limited to 60 for consistent performance comparison\n";
     std::cout << "Press ESC to exit, SPACE to reset\n";
     
     // Main game loop
@@ -156,12 +145,6 @@ int main(int argc, char* argv[]) {
         auto current_time = std::chrono::high_resolution_clock::now();
         float delta_time = std::chrono::duration<float>(current_time - last_time).count();
         last_time = current_time;
-        
-        // Only limit delta time for extremely large jumps (e.g., when debugging/pausing)
-        // but allow much higher FPS for performance testing
-        if (delta_time > 0.5f) {
-            delta_time = 0.016f; // Only cap at 2 FPS to prevent huge simulation jumps
-        }
         
         // Handle events with version-specific API
 #if SFML_VERSION_MAJOR >= 3

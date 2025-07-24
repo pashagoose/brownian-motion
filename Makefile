@@ -33,12 +33,19 @@ TARGET = brownian_simulation
 # Build modes for demo
 BASE_FLAGS = -O3 -DNDEBUG -ffast-math -funroll-loops
 SLOW_FLAGS = $(BASE_FLAGS) -DUSE_SLOW_MATRIX
-FAST_FLAGS = $(BASE_FLAGS) -DUSE_FAST_MATRIX  
+FAST_FLAGS = $(BASE_FLAGS) -DUSE_FAST_MATRIX
 
-# Default compiler flags
+# Ultra flags with architecture-specific SIMD optimizations
+ifeq ($(shell uname -m), arm64)
+    ULTRA_FLAGS = $(BASE_FLAGS) -DUSE_ULTRA_FAST_MATRIX -mcpu=native
+else
+    ULTRA_FLAGS = $(BASE_FLAGS) -DUSE_ULTRA_FAST_MATRIX -mavx2 -mfma
+endif  
+
+# Default compiler flags (use slow version by default)
 CXXFLAGS = -std=c++17 -Wall -Wextra -g $(INCLUDE_FLAGS) $(ARCH_FLAGS) $(SLOW_FLAGS)
 
-.PHONY: all clean slow fast install-deps help
+.PHONY: all clean slow fast ultra install-deps help
 
 all: slow
 
@@ -55,6 +62,10 @@ slow: clean
 fast: clean  
 	@echo "Building FAST version (cache-optimized)..."
 	$(MAKE) $(TARGET) CXXFLAGS="-std=c++17 -Wall -Wextra -g $(INCLUDE_FLAGS) $(ARCH_FLAGS) $(FAST_FLAGS)"
+
+ultra: clean
+	@echo "Building ULTRA FAST version (SIMD + cache-optimized)..."
+	$(MAKE) $(TARGET) CXXFLAGS="-std=c++17 -Wall -Wextra -g $(INCLUDE_FLAGS) $(ARCH_FLAGS) $(ULTRA_FLAGS)"
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
@@ -83,7 +94,8 @@ help:
 	@echo "🚀 Brownian Motion Performance Demo - Build Targets:"
 	@echo ""
 	@echo "  slow      - Build SLOW version (~15 FPS) - shows the problem"
-	@echo "  fast      - Build FAST version (~70 FPS) - cache optimization"  
+	@echo "  fast      - Build FAST version (~70 FPS) - cache optimization"
+	@echo "  ultra     - Build ULTRA FAST version (~120+ FPS) - SIMD + cache optimization"
 	@echo ""
 	@echo "  clean        - Remove build artifacts"
 	@echo "  install-deps - Install SFML dependencies"
